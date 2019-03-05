@@ -1,5 +1,6 @@
 import {
   bootstrapDiagram,
+  getDiagramJS,
   inject
 } from 'test/TestHelper';
 
@@ -159,6 +160,81 @@ describe('features/keyboard-move-selection', function() {
         expect(shape2.y).to.eql(10 + 10);
       }
     ));
+
+  });
+
+
+  describe('rules', function() {
+
+    beforeEach(bootstrapDiagram({
+      modules: [
+        modelingModule,
+        keyboardMoveSelectionModule
+      ],
+      canvas: {
+        deferUpdate: false
+      }
+    }));
+
+    beforeEach(inject(setupShapes));
+
+
+    function moveRule(fn) {
+
+      /* global sinon */
+
+      var spyFn = sinon.spy(fn);
+
+      getDiagramJS().invoke(function(eventBus) {
+        eventBus.on('commandStack.elements.move.canExecute', spyFn);
+      });
+
+      return spyFn;
+    }
+
+
+    it('should invoke', inject(function(keyboard) {
+
+      // given
+      var ruleFn = moveRule(function(event) {
+        var context = event.context;
+
+        expect(context.shapes).to.eql([ shape1, shape2 ]);
+      });
+
+      // given
+      var event = createKeyEvent('ArrowLeft', { shiftKey: false });
+
+      // when
+      keyboard._keyHandler(event);
+
+      // then
+      // we moved
+      expect(shape1.x).to.not.eql(10);
+
+      expect(ruleFn).to.have.been.called;
+    }));
+
+
+    it('should reject move', inject(function(keyboard) {
+
+      // given
+      moveRule(function(event) {
+
+        // reject movement
+        return false;
+      });
+
+      // given
+      var event = createKeyEvent('ArrowLeft', { shiftKey: false });
+
+      // when
+      keyboard._keyHandler(event);
+
+      // then
+      // we did not move
+      expect(shape1.x).to.eql(10);
+    }));
 
   });
 
