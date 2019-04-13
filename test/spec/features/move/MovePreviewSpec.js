@@ -81,7 +81,7 @@ describe('features/move - MovePreview', function() {
 
   describe('style integration via <djs-dragging>', function() {
 
-    it('should append class to shape + outgoing connections', inject(function(move, dragging, elementRegistry) {
+    it.only('should append class to shape + outgoing connections', inject(function(move, dragging, elementRegistry) {
 
       // given
       move.start(canvasEvent({ x: 10, y: 10 }), childShape);
